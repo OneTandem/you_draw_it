@@ -27,3 +27,9 @@ body{
   stroke-width: 3;
   stroke-dasharray: 5 5;
 }
+
+#restart {
+  visibility: hidden;
+  margin: auto;
+  text-align: center;
+}
