@@ -17,13 +17,16 @@ var originalData = [
 ]
 
 
+// this scripts adapts the code from Adam Pearce published at https://bl.ocks.org/1wheel/07d9040c3422dac16bd5be741433ff1e
 
+// load the SuperStore dataset
 d3.csv('superstore.csv', function(error, data) {
   //data = originalData;
 
   console.log(data)
 
   parseDate = d3.timeParse("%m/%d/%Y");
+  parseShortDate = d3.timeParse("%m/%Y");
 
   data.forEach(d => {
     d.date = parseDate(d['Order Date']);
@@ -31,11 +34,11 @@ d3.csv('superstore.csv', function(error, data) {
 
   console.log(data)
 
+  // group data by month
   var nested_data = d3.nest()
     .key(function(d) { 
       splitDate = d['Order Date'].split('/');
-      return splitDate[0] + "/" + splitDate[2];
-      //return d['Order Date'].split('/').slice(0, 2).join('/'); 
+      return parseShortDate(splitDate[0] + "/" + splitDate[2]);
     })
     .rollup(function(leaves) { return d3.sum(leaves, function(d){ return d.Sales }) })
     .entries(data);
@@ -52,26 +55,48 @@ d3.csv('superstore.csv', function(error, data) {
     margin: {left: 50, right: 50, top: 30, bottom: 30}
   })
 
-  c.svg.append('rect').at({width: c.width, height: c.height, opacity: 0})
+  c.svg.append('rect').at({width: c.width, height: c.height, opacity: 0});
 
-  c.x.domain([2001, 2015])
-  c.y.domain([0, 100])
+  d3.conventions({x: d3.scaleTime()})
+  console.log(d3.extent(nested_data, d => { return d.key; }))
+  console.log(c.x)
 
-  c.xAxis.ticks(4).tickFormat(ƒ())
-  c.yAxis.ticks(5).tickFormat(d => d + '%')
+  //c.x.domain([2001, 2015])//
+  c.x.domain(d3.extent(nested_data, d => { return d.key; }))
+  console.log(c.x.domain())
+  c.y.domain([0, d3.max(nested_data, d => { return d.value; })])
 
-  var area = d3.area().x(ƒ('year', c.x)).y0(ƒ('debt', c.y)).y1(c.height)
-  var line = d3.area().x(ƒ('year', c.x)).y(ƒ('debt', c.y))
+  /*c.xAxis.ticks(4).tickFormat(ƒ())
+  c.yAxis.ticks(5).tickFormat(d => d + '%')*/
+  c.xAxis.ticks(4);
+  c.yAxis.ticks(5);
+
+  console.log(ƒ('key', c.x))
+  /*var area = d3.area().x(ƒ('key', c.x)).y0(ƒ('value', c.y)).y1(c.height)
+  var line = d3.area().x(ƒ('key', c.x)).y(ƒ('value', c.y))*/
+  var area = d3.area()
+            .x(d => { 
+              console.log(c.x.domain())
+              console.log(d.key)
+              console.log(c.x(d.key))
+              return c.x(d.key)} )
+            .y0(d => { return c.y(d.value)} )
+            .y1(c.height)
+  var line = d3.area()
+            .x(d => { return c.x(d.key) })
+            .y(d => { return c.y(d.value) })
+
 
   var clipRect = c.svg
     .append('clipPath#clip')
     .append('rect')
-    .at({width: c.x(2008) - 2, height: c.height})
+    //.at({width: c.x(2008) - 2, height: c.height})
+    .at({width: sel.node().offsetWidth/2 - 2, height: c.height})
 
   var correctSel = c.svg.append('g').attr('clip-path', 'url(#clip)')
 
-  correctSel.append('path.area').at({d: area(data)})
-  correctSel.append('path.line').at({d: line(data)})
+  correctSel.append('path.area').at({d: area(nested_data)})
+  correctSel.append('path.line').at({d: line(nested_data)})
   yourDataSel = c.svg.append('path.your-line')
 
   //c.drawAxis()
