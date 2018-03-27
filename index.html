@@ -6,29 +6,37 @@
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="node_modules/d3-jetpack/build/d3-jetpack.js"></script>
+<h1>How did our sales go?</h1>
+<h3>Draw a line to see if your guess fits reality</h3>
 <div id="viz"></div>
-<button id="restart">Start again</button>
+<div id="controls">
+	<button id="restart">Start again</button>
+</div>
 <script>
 	
-d3.tsv('superstore_simplified.tsv', function(error, data) {
-  // the x value (in data coordinates) where to clip to
-  const clippingPoint = 2012;
-  const clippingValue = data.filter(p => { return p.year == clippingPoint})[0].debt;
+d3.tsv('superstore_simplified.tsv', function(error, data) {  
 
   data.forEach(d => {
     d.year = +d.year;
     d.debt = +d.debt;
-  })
+  });
+
+  // the x value (in data coordinates) where to clip to
+  const clippingPoint = 2012;
+  const clippingValue = data.filter(p => { return p.year == clippingPoint})[0].debt;
 
   var ƒ = d3.f
 
   var sel = d3.select('#viz')
   var c = d3.conventions({
     parentSel: sel, 
-    totalWidth: sel.node().offsetWidth, 
+    totalWidth: Math.min(sel.node().offsetWidth, 700), 
     height: 400, 
     margin: {left: 50, right: 50, top: 30, bottom: 30}
-  })
+  });
+
+  d3.select("#controls")
+  	.style("width", Math.min(sel.node().offsetWidth, 700));
 
   c.svg.append('rect').at({width: c.width, height: c.height, opacity: 0})
 
@@ -41,7 +49,7 @@ d3.tsv('superstore_simplified.tsv', function(error, data) {
 
   c.xAxis.tickFormat(ƒ())
   //c.yAxis.ticks(5).tickFormat(d => d + '%')
-  c.yAxis.ticks(5);
+  c.yAxis.ticks(5).tickFormat(d3.formatPrefix(".0", 1e3));
 
   var area = d3.area().x(ƒ('year', c.x)).y0(ƒ('debt', c.y)).y1(c.height)
   var line = d3.area().x(ƒ('year', c.x)).y(ƒ('debt', c.y))
@@ -97,8 +105,12 @@ d3.tsv('superstore_simplified.tsv', function(error, data) {
       // d3.mean just evaluates if all the values in "defined" is 1
       if (!completed && d3.mean(yourData, ƒ('defined')) == 1){
         completed = true;
+
+        console.log(yourData)
+
         d3.select("#restart")
-        	.style("visibility", "visible")
+        	.style("visibility", "visible");
+
         clipRect.transition()
                 .duration(1000)
                   .attr('width', c.x(maxXValue))

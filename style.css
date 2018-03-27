@@ -3,7 +3,7 @@ svg{
 }
 
 body{
-  font-family: monospace;
+  font-family: avenir;
   margin: 0px;
   overflow: hidden;
 }
@@ -29,7 +29,16 @@ body{
 }
 
 #restart {
-  visibility: hidden;
+  visibility: hidden;  
+}
+
+#viz, #controls {
   margin: auto;
   text-align: center;
+}
+
+h1, h3 {
+  text-align: center;
+  color: #555;
+  line-height: 15px; 
 }
