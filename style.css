@@ -8,11 +8,11 @@ body{
   overflow: hidden;
 }
 
-.axis{
+.axis {
   opacity: .5;
 }
 
-.line{
+.line {
   fill: none;
   stroke: black;
   stroke-width: 3;
@@ -23,7 +23,7 @@ body{
 }
 
 .your-line{
-  stroke: #f0f;
+  stroke: darkgray;
   stroke-width: 3;
   stroke-dasharray: 5 5;
 }
